@@ -10,8 +10,9 @@ global with sharing class ContractRest {
         return result;
     }
 
-    @HttpPost // a tester
+    @HttpPost
         global static String doPost(String Status,Date StartDate, Integer ContractTerm, String AccountId) {
+
             Contract contract = new Contract();
             contract.StartDate = StartDate;
             contract.ContractTerm = ContractTerm;
@@ -21,14 +22,29 @@ global with sharing class ContractRest {
             insert contract;
             return contract.Id;
     }
-/*
+
     @HttpPut // a tester
-    global static Integer doPatch(String FirstName,String LastName,String Email) {
-        Contract contract = new Contract();
-        contract.FirstName = FirstName;
-        contract.LastName = LastName;
-        contract.Email = Email;
-        update contract;
-        return 1;
-    }*/
+    global static String doPut(String Status,Date StartDate, Integer ContractTerm, String AccountId) {
+
+        RestRequest req = RestContext.request;
+        String contractId = req.requestURI.substring(req.requestURI.lastIndexOf('/')+1);
+        Contract contract = [SELECT Id, StartDate, ContractTerm, Status, AccountId FROM Contract WHERE Id = :contractId LIMIT 1];
+
+        if(contract != null){
+            contract.Status = String.isBlank(Status) ? contract.Status : Status;
+            contract.StartDate = StartDate == contract.StartDate ? contract.StartDate : StartDate;
+            contract.ContractTerm = contract.ContractTerm == ContractTerm ? contract.ContractTerm : ContractTerm;
+
+            update contract;
+
+            return 'updated';
+
+        }else{
+            return 'No contract related to this Id';
+        }
+
+    }
 }
+
+
+

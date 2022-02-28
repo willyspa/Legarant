@@ -1,19 +1,22 @@
 public with sharing class ContactTriggerHelper {
-    public static void checkIfTheContactsAreDuplicate(List<Contact> listContacts){
+    public static void checkIfTheContactsAreDuplicate(List<Contact> listContacts,Map<Id,Contact> newMap){
 
         Set<String> setEmail = new Set<String>();
-        List<Contact> listDuplicateContact = new List<Contact>();
+        Set<Id> setId = new Set<Id>();
+        Map<Id,Contact> listDuplicateContact = new Map<Id,Contact>();
 
         for(Contact c:listContacts){
             setEmail.add(c.email);
+            setId.add(c.Id);
         }
 
-        listDuplicateContact = [SELECT Id, email FROM Contact WHERE email IN :setEmail];
+        listDuplicateContact = new Map<Id,Contact>([SELECT Id, email FROM Contact WHERE email IN :setEmail AND Id NOT IN :setId]);
+        
         //Check if the email is already on the database, if true throw an error
         if(listDuplicateContact.size()>0)
             throw new ContactException('Un contact existe déjà avec cet email :'+listDuplicateContact);      
     }
-
+    /*
     public static void CheckIfEmailIsChanged(List<Contact> listContact,Map<Id,Contact> OldMap){
         
         for(Contact c:listContact){
@@ -21,5 +24,5 @@ public with sharing class ContactTriggerHelper {
             if(c.Email != oldMap.get(c.Id).Email)
                 throw new ContactException('L\'email ne peut pas être modifié :'+c.Name+' - '+c.Id);
         }
-    }    
+    }*/
 }

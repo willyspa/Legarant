@@ -6,10 +6,10 @@ trigger ContactTrigger on Contact (before insert,before update,before delete) {
     System.debug('Setting status :'+setting.Interface__c);
 
     if(Trigger.IsBefore && Trigger.isInsert && Setting.Interface__c)
-        ContactTriggerHelper.checkIfTheContactsAreDuplicate(Trigger.New);
+        ContactTriggerHelper.checkIfTheContactsAreDuplicate(Trigger.New,Trigger.newMap);
 
     if(Trigger.IsBefore && Trigger.isUpdate && Setting.Interface__c)
-        ContactTriggerHelper.CheckIfEmailIsChanged(Trigger.New, Trigger.oldMap);
+        ContactTriggerHelper.checkIfTheContactsAreDuplicate(Trigger.New,Trigger.newMap);
 
     //Throw error if the user interface try to delete contacts
     if(Trigger.IsBefore && Trigger.isDelete && Setting.Interface__c)
