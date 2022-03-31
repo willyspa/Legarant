@@ -1,48 +1,50 @@
 @RestResource(urlMapping='/Contract/*')
 global with sharing class ContractRest {
 
-    @HttpGet
-    global static Contract doGet() {
-        RestRequest req = RestContext.request;
-        String contractId = req.requestURI.substring(req.requestURI.lastIndexOf('/')+1);
-        Contract result = [SELECT Id, StartDate, EndDate, ContractTerm, Status, AccountId, Account.Name FROM Contract WHERE Id = :contractId];
-
-        return result;
-    }
-
+    private static String headAttribute = 'Content-Type';
+    private static String headValue = 'application/json';
+    
     @HttpPost
-        global static String doPost(String Status,Date StartDate, Integer ContractTerm, String AccountId) {
+    global static void doPost(String Status,Date StartDate, Integer ContractTerm, String AccountId) {
 
-            Contract contract = new Contract();
-            contract.StartDate = StartDate;
-            contract.ContractTerm = ContractTerm;
-            contract.Status = Status;
-            contract.AccountId = AccountId;
-
+            Contract contract = new Contract(StartDate = StartDate, ContractTerm = ContractTerm, Status = Status, AccountId = AccountId);
             insert contract;
-            return contract.Id;
+
+            ContractRestAPI contractResponse = ContractRestAPI.parse(contract);
+            contractResponse.setResponseMessage('Successfully created');
+            RestResponse res = RestContext.response;
+            res.addHeader(headAttribute,headValue);
+            res.responseBody = Blob.valueOf(contractResponse.toJSON());
     }
 
     @HttpPut // a tester
-    global static String doPut(String Status,Date StartDate, Integer ContractTerm, String AccountId) {
+    global static void doPut(String Status,Date StartDate, Integer ContractTerm, String AccountId) {
 
+        String updated = 'updated';
+        String errorMsg = 'No contract related to this Id';
         RestRequest req = RestContext.request;
         String contractId = req.requestURI.substring(req.requestURI.lastIndexOf('/')+1);
-        Contract contract = [SELECT Id, StartDate, ContractTerm, Status, AccountId FROM Contract WHERE Id = :contractId LIMIT 1];
+        List<Contract> contracts = [SELECT Id, StartDate, ContractTerm, Status, AccountId FROM Contract WHERE Id = :contractId LIMIT 1];
 
-        if(contract != null){
+
+
+        if(contracts.size() == 1){
+            Contract contract = contracts[0];
             contract.Status = String.isBlank(Status) ? contract.Status : Status;
             contract.StartDate = StartDate == contract.StartDate ? contract.StartDate : StartDate;
             contract.ContractTerm = contract.ContractTerm == ContractTerm ? contract.ContractTerm : ContractTerm;
 
             update contract;
 
-            return 'updated';
-
+            RestResponse res = RestContext.response;
+            res.addHeader(headAttribute,headValue);
+            res.responseBody = Blob.valueOf(updated);
         }else{
-            return 'No contract related to this Id';
+            RestResponse res = RestContext.response;
+            res.addHeader(headAttribute,headValue);
+            res.responseBody = Blob.valueOf(errorMsg);
+            res.statusCode = 500;
         }
-
     }
 }
 

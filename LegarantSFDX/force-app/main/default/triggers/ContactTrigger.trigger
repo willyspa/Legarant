@@ -1,5 +1,5 @@
 trigger ContactTrigger on Contact (before insert,before update,before delete) {
-    
+    /*
     //If the userInterface trigger the process the setting Interface__c will be set to true 
     ActivationSettings__c setting = ActivationSettings__c.getInstance();
 
@@ -14,4 +14,5 @@ trigger ContactTrigger on Contact (before insert,before update,before delete) {
     //Throw error if the user interface try to delete contacts
     if(Trigger.IsBefore && Trigger.isDelete && Setting.Interface__c)
         throw new ContactException('Suppression de contact impossible');
+        */
 }

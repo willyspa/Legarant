@@ -3,6 +3,7 @@ global with sharing class MyRestResource {
 
     @HttpGet
     global static Account doGet() {
+        
         RestRequest req = RestContext.request;
         RestResponse res = RestContext.response;
         String accountId = req.requestURI.substring(req.requestURI.lastIndexOf('/')+1);
